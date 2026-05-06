@@ -94,6 +94,12 @@ header nav a:hover {
   background: color-mix(in srgb, var(--color-accent) 10%, transparent);
 }
 
+header nav a[aria-current="page"] {
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  font-weight: 600;
+}
+
 /* ── Main ─────────────────────────────────────────── */
 main {
   flex: 1;
