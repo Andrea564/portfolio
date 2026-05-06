@@ -322,12 +322,19 @@ html[data-theme="dark"] #theme-toggle:hover {
 }
 
 .cv-topbar {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
+  position: relative;
+  text-align: center;
   margin-bottom: 2rem;
-  flex-wrap: wrap;
+}
+
+.cv-topbar-center {
+  display: inline-block;
+}
+
+.cv-topbar-right {
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
 .cv-name {
@@ -354,7 +361,7 @@ html[data-theme="dark"] #theme-toggle:hover {
   background: var(--color-accent);
   color: var(--color-accent-text);
   text-decoration: none;
-  padding: 0.5rem 1.1rem;
+  padding: 0.35rem 0.8rem;
   border-radius: 4px;
   font-size: 0.9rem;
   font-weight: 600;
