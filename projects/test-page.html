@@ -42,8 +42,15 @@
         <li>Key findings and takeaways</li>
       </ul>
 
-      <div class="embed-placeholder">
-        <p>[ Power BI embed will go here ]</p>
+      <div class="embed-wrapper">
+        <button class="btn-fullscreen" onclick="document.getElementById('pbi-embed').requestFullscreen()" aria-label="Fullscreen">&#x26F6; Fullscreen</button>
+        <iframe
+          id="pbi-embed"
+          class="embed-placeholder"
+          title="Power BI embed will go here"
+          srcdoc="<html style='height:100%'><body style='margin:0;height:100%;display:flex;align-items:center;justify-content:center;font-family:Segoe UI,sans-serif;color:#4A5568;background:transparent;'>[ Power BI embed will go here ]</body></html>"
+          allowfullscreen
+        ></iframe>
       </div>
     </article>
   </main>
