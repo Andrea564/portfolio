@@ -6,6 +6,7 @@
   <title>Test Page | Andreas O'Brien</title>
   <meta name="description" content="A placeholder project page confirming the portfolio site is live. Future projects will feature embedded Power BI dashboards and analysis write-ups." />
   <link rel="stylesheet" href="../assets/css/style.css" />
+  <script>(function(){var t=localStorage.getItem('portfolio-theme');if(t)document.documentElement.dataset.theme=t;})()</script>
 </head>
 <body>
   <header>
@@ -15,6 +16,7 @@
       <a href="../index.html">Home</a>
       <a href="index.html" aria-current="page">Projects</a>
       <a href="../cv.html">CV</a>
+      <button id="theme-toggle" aria-label="Switch to dark mode">Theme</button>
     </nav>
   </header>
 
@@ -45,5 +47,6 @@
   <footer>
     <p>&copy; 2026 Andreas O'Brien &mdash; <a href="https://www.linkedin.com/in/andreasobrien" rel="noopener noreferrer">LinkedIn</a> &middot; <a href="https://github.com/Andrea564/portfolio" rel="noopener noreferrer">GitHub</a></p>
   </footer>
+  <script src="../assets/js/theme.js"></script>
 </body>
 </html>
