@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multi-Project Gantt &amp; CPM | Andreas O'Brien</title>
+  <meta name="description" content="An interactive multi-project Gantt chart built in Power BI with a JavaScript CPM engine computing critical paths, planned vs actual progress, and dependency arrows." />
+  <link rel="stylesheet" href="../assets/css/style.css" />
+  <script>(function(){var t=localStorage.getItem('portfolio-theme');if(t)document.documentElement.dataset.theme=t;})()</script>
+</head>
+<body>
+  <header>
+    <div class="header-top">
+      <div>
+        <h1>Andreas O'Brien</h1>
+        <p class="subtitle">Data Science &amp; Visualisation Portfolio</p>
+      </div>
+      <button id="theme-toggle" aria-label="Switch to dark mode">Theme</button>
+    </div>
+    <nav>
+      <a href="../index.html">Home</a>
+      <a href="index.html" aria-current="page">Projects</a>
+      <a href="../cv.html">CV</a>
+    </nav>
+  </header>
+
+  <main>
+    <article class="project">
+      <h2>Multi-Project Gantt Chart with Critical Path</h2>
+      <p class="meta">February 2025 &mdash; Power BI &middot; Power Query M &middot; Vega</p>
+
+      <p>
+        A portfolio-spanning Gantt chart covering six civil engineering projects — from bridge replacements
+        to flood defence schemes — built entirely in Power BI with a custom Power Query M transform pipeline.
+        The report computes planned and actual timelines from raw dependency data, runs a full
+        Critical Path Method (CPM) forward and backward pass at load time, and renders an interactive
+        Vega v5 visualisation with dependency arrows, progress bars, and automatic critical path highlighting.
+      </p>
+
+      <h3>Key features</h3>
+      <ul>
+        <li>Dependency-driven scheduling: all dates derived from a predecessor chain, not entered manually</li>
+        <li>CPM implementation in Power Query M</li>
+        <li>Critical path tasks highlighted in red; non-critical tasks in blue</li>
+        <li>Dependency arrows rendered in Vega with correct fan-out (multiple successors per predecessor)</li>
+        <li>Planned vs actual dual-bar layout with dashed in-progress indicators and a "today" reference line</li>
+        <li>Six projects with synthetic milestones across several phases</li>
+      </ul>
+
+      <div class="embed-wrapper">
+        <button class="btn-fullscreen" onclick="document.getElementById('pbi-embed').requestFullscreen()" aria-label="Fullscreen">&#x26F6; Fullscreen</button>
+        <iframe
+          id="pbi-embed"
+          title="project_timeline_v1"
+          width="1280"
+          height="720"
+          src="https://app.powerbi.com/view?r=eyJrIjoiYjg5NmFkYWItNTU5OC00ODUyLWFmZjMtZGIzYjJmNTZiODM4IiwidCI6ImI2NjExM2E4LWE5NzQtNGNlYi1iZTY2LTg5Y2QyNzA4NmIwZCJ9"
+          frameborder="0"
+          allowfullscreen
+        ></iframe>
+      </div>
+    </article>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Andreas O'Brien &mdash; <a href="https://www.linkedin.com/in/andreasobrien" rel="noopener noreferrer">LinkedIn</a> &middot; <a href="https://github.com/Andrea564/portfolio" rel="noopener noreferrer">GitHub</a></p>
+  </footer>
+  <script src="../assets/js/theme.js"></script>
+</body>
+</html>

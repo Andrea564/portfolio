@@ -1,0 +1,74 @@
+ProjectID,ProjectName,ProjectStartDate,MilestoneHeading,MilestoneID,MilestoneName,DependsOnMilestoneID,PlannedDuration_days,ActualDuration_days,ProgressPct,Status
+P001,Riverside Bridge Replacement,2025-10-15,Design & Planning,M001,Ground Survey,,18,22,100,Complete
+P001,Riverside Bridge Replacement,2025-10-15,Design & Planning,M002,Environmental Impact Assessment,M001,25,25,100,Complete
+P001,Riverside Bridge Replacement,2025-10-15,Design & Planning,M003,Concept Design,M001,20,20,100,Complete
+P001,Riverside Bridge Replacement,2025-10-15,Design & Planning,M004,Detailed Engineering Design,M002,39,42,100,Complete
+P001,Riverside Bridge Replacement,2025-10-15,Design & Planning,M005,Planning Application Submission,M004,18,18,100,Complete
+P001,Riverside Bridge Replacement,2025-10-15,Design & Planning,M006,Planning Consent Granted,M004,32,53,100,Complete
+P001,Riverside Bridge Replacement,2025-10-15,Procurement,M007,Tender Package Preparation,M006,18,18,100,Complete
+P001,Riverside Bridge Replacement,2025-10-15,Procurement,M008,Contract Award,M006,25,18,100,Complete
+P001,Riverside Bridge Replacement,2025-10-15,Construction,M009,Piling Works,M008,39,39,100,Complete
+P001,Riverside Bridge Replacement,2025-10-15,Construction,M010,Abutment Construction,M009,39,,77,In Progress
+P001,Riverside Bridge Replacement,2025-10-15,Construction,M011,Beam Installation,M010,39,,0,Not Started
+P001,Riverside Bridge Replacement,2025-10-15,Construction,M012,Deck Construction,M009,53,,57,In Progress
+P001,Riverside Bridge Replacement,2025-10-15,Construction,M013,Parapets & Drainage,M012,32,,0,Not Started
+P001,Riverside Bridge Replacement,2025-10-15,Commissioning & Handover,M014,Load Testing,M013,18,,0,Not Started
+P001,Riverside Bridge Replacement,2025-10-15,Commissioning & Handover,M015,Practical Completion & DLP,M012,29,,0,Not Started
+P002,Northern Ring Road Extension,2025-08-09,Design & Planning,M001,Topographic Survey,,18,18,100,Complete
+P002,Northern Ring Road Extension,2025-08-09,Design & Planning,M002,Ground Investigation,M001,32,39,100,Complete
+P002,Northern Ring Road Extension,2025-08-09,Design & Planning,M003,Horizontal & Vertical Alignment,M002,39,39,100,Complete
+P002,Northern Ring Road Extension,2025-08-09,Design & Planning,M004,Drainage & Services Design,M002,46,46,100,Complete
+P002,Northern Ring Road Extension,2025-08-09,Design & Planning,M005,Planning Consent,M004,74,109,100,Complete
+P002,Northern Ring Road Extension,2025-08-09,Procurement,M006,Tender Evaluation & Contract Award,M004,39,46,100,Complete
+P002,Northern Ring Road Extension,2025-08-09,Construction,M007,Bulk Excavation,M006,67,81,100,Complete
+P002,Northern Ring Road Extension,2025-08-09,Construction,M008,Embankment Formation,M007,53,53,50,In Progress
+P002,Northern Ring Road Extension,2025-08-09,Construction,M009,Sub-base & Base Course,M007,67,74,100,Complete
+P002,Northern Ring Road Extension,2025-08-09,Construction,M010,Surface Course,M009,39,,0,Not Started
+P002,Northern Ring Road Extension,2025-08-09,Construction,M011,Retaining Walls,M009,67,,0,Not Started
+P002,Northern Ring Road Extension,2025-08-09,Construction,M012,Road Markings & Signage,M010,18,,0,Not Started
+P002,Northern Ring Road Extension,2025-08-09,Commissioning & Handover,M013,Safety Audit & Opening,M009,18,,33,In Progress
+P003,Eastfield Wastewater Treatment Upgrade,2025-06-02,Design & Planning,M001,Condition Survey of Existing Assets,,25,32,100,Complete
+P003,Eastfield Wastewater Treatment Upgrade,2025-06-02,Design & Planning,M002,Process Design,M001,46,46,100,Complete
+P003,Eastfield Wastewater Treatment Upgrade,2025-06-02,Design & Planning,M003,Civil & Structural Design,M001,53,53,100,Complete
+P003,Eastfield Wastewater Treatment Upgrade,2025-06-02,Design & Planning,M004,Discharge of Planning Conditions,M003,32,39,100,Complete
+P003,Eastfield Wastewater Treatment Upgrade,2025-06-02,Procurement,M005,Mechanical & Electrical Procurement,M003,32,32,100,Complete
+P003,Eastfield Wastewater Treatment Upgrade,2025-06-02,Construction,M006,Excavation & Foundations,M005,46,46,100,Complete
+P003,Eastfield Wastewater Treatment Upgrade,2025-06-02,Construction,M007,Tankage Construction,M006,81,88,100,Complete
+P003,Eastfield Wastewater Treatment Upgrade,2025-06-02,Construction,M008,Equipment Installation,M006,53,53,100,Complete
+P003,Eastfield Wastewater Treatment Upgrade,2025-06-02,Construction,M009,Electrical & Controls,M008,39,39,100,Complete
+P003,Eastfield Wastewater Treatment Upgrade,2025-06-02,Commissioning & Handover,M010,Process Commissioning,M008,39,,60,In Progress
+P003,Eastfield Wastewater Treatment Upgrade,2025-06-02,Commissioning & Handover,M011,Practical Completion,M010,18,,0,Not Started
+P004,Greenway Cycle & Pedestrian Route,2026-04-06,Design & Planning,M001,Route Assessment,,18,18,100,Complete
+P004,Greenway Cycle & Pedestrian Route,2026-04-06,Design & Planning,M002,Ecological Survey,M001,25,,20,In Progress
+P004,Greenway Cycle & Pedestrian Route,2026-04-06,Design & Planning,M003,Detailed Route Design,M001,39,,20,In Progress
+P004,Greenway Cycle & Pedestrian Route,2026-04-06,Design & Planning,M004,Planning Approval,M003,39,,0,Not Started
+P004,Greenway Cycle & Pedestrian Route,2026-04-06,Procurement,M005,Contract Award,M003,18,,0,Not Started
+P004,Greenway Cycle & Pedestrian Route,2026-04-06,Construction,M006,Clearance & Surfacing Preparation,M005,25,,0,Not Started
+P004,Greenway Cycle & Pedestrian Route,2026-04-06,Construction,M007,Drainage Installation,M006,25,,0,Not Started
+P004,Greenway Cycle & Pedestrian Route,2026-04-06,Construction,M008,Bound Surface Course,M006,25,,0,Not Started
+P004,Greenway Cycle & Pedestrian Route,2026-04-06,Construction,M009,Street Furniture & Markings,M008,18,,0,Not Started
+P004,Greenway Cycle & Pedestrian Route,2026-04-06,Commissioning & Handover,M010,Safety Audit & Opening,M008,11,,0,Not Started
+P005,Harton Flood Defence Scheme,2025-09-01,Design & Planning,M001,Flood Risk Modelling,,39,46,100,Complete
+P005,Harton Flood Defence Scheme,2025-09-01,Design & Planning,M002,Geotechnical Investigation,M001,32,32,100,Complete
+P005,Harton Flood Defence Scheme,2025-09-01,Design & Planning,M003,Flood Wall & Embankment Design,M002,53,53,100,Complete
+P005,Harton Flood Defence Scheme,2025-09-01,Design & Planning,M004,Environment Agency Consent,M002,60,95,100,Complete
+P005,Harton Flood Defence Scheme,2025-09-01,Procurement,M005,Contract Award,M004,32,39,100,Complete
+P005,Harton Flood Defence Scheme,2025-09-01,Construction,M006,Embankment Raising Works,M005,53,,75,In Progress
+P005,Harton Flood Defence Scheme,2025-09-01,Construction,M007,Sheet Piled Flood Wall,M005,60,,67,In Progress
+P005,Harton Flood Defence Scheme,2025-09-01,Construction,M008,Culvert & Outfall Works,M007,53,,0,Not Started
+P005,Harton Flood Defence Scheme,2025-09-01,Construction,M009,Reinstatement & Landscaping,M007,32,,0,Not Started
+P005,Harton Flood Defence Scheme,2025-09-01,Commissioning & Handover,M010,Inspection & Practical Completion,M007,18,,0,Not Started
+P006,Central Depot Redevelopment,2025-12-01,Design & Planning,M001,Structural Condition Survey,,18,18,100,Complete
+P006,Central Depot Redevelopment,2025-12-01,Design & Planning,M002,Asbestos Survey,M001,11,11,100,Complete
+P006,Central Depot Redevelopment,2025-12-01,Design & Planning,M003,Architectural Design,M001,53,60,100,Complete
+P006,Central Depot Redevelopment,2025-12-01,Design & Planning,M004,Building Services Design,M003,60,60,100,Complete
+P006,Central Depot Redevelopment,2025-12-01,Design & Planning,M005,Building Regulations Approval,M004,46,,50,In Progress
+P006,Central Depot Redevelopment,2025-12-01,Procurement,M006,Contract Award,M003,32,32,100,Complete
+P006,Central Depot Redevelopment,2025-12-01,Construction,M007,Demolition of Existing Structures,M006,31,38,100,Complete
+P006,Central Depot Redevelopment,2025-12-01,Construction,M008,Foundation & Slab Works,M007,46,,55,In Progress
+P006,Central Depot Redevelopment,2025-12-01,Construction,M009,Steel Frame Erection,M007,53,,0,Not Started
+P006,Central Depot Redevelopment,2025-12-01,Construction,M010,Roof & Cladding,M009,39,,0,Not Started
+P006,Central Depot Redevelopment,2025-12-01,Construction,M011,Mechanical & Electrical First Fix,M009,46,,0,Not Started
+P006,Central Depot Redevelopment,2025-12-01,Construction,M012,Internal Fit-Out & Finishes,M011,60,,0,Not Started
+P006,Central Depot Redevelopment,2025-12-01,Commissioning & Handover,M013,Systems Commissioning & Snagging,M012,25,,0,Not Started
+P006,Central Depot Redevelopment,2025-12-01,Commissioning & Handover,M014,Practical Completion,M012,11,,0,Not Started

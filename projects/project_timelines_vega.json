@@ -1,0 +1,582 @@
+    {
+    "$schema": "https://vega.github.io/schema/vega/v5.json",
+    "autosize": {"type": "fit", "contains": "padding"},
+    "padding": 5,
+    "title": {
+        "text": {"signal": "data('dataset').length > 0 ? data('dataset')[0].ProjectName + ' Gantt Chart' : 'Gantt Chart'"},
+        "fontSize": 18,
+        "fontWeight": "bold",
+        "anchor": "middle",
+        "offset": 8
+    },
+    "width": 1200,
+    "height": {"signal": "chartHeight"},
+    "signals": [
+        {"name": "rowHeight", "value": 28},
+        {"name": "plannedBarRatio", "value": 0.55},
+        {"name": "actualBarRatio", "value": 0.35},
+        {"name": "taskAreaHeight", "update": "length(data('tasks')) * rowHeight"},
+        {"name": "chartHeight", "update": "taskAreaHeight + 90"},
+        {"name": "today", "update": "now()"}
+    ],
+    "data": [
+        {
+        "name": "dataset"
+        },
+        {
+        "name": "data_with_aggregates",
+        "source": "dataset",
+        "transform": [
+            {"type": "formula", "as": "project_name", "expr": "datum.ProjectName"},
+            {
+            "type": "formula",
+            "as": "workpackage_description",
+            "expr": "datum.MilestoneHeading + ' > ' + datum.MilestoneName"
+            },
+            {"type": "formula", "as": "milestone_id", "expr": "datum.MilestoneID"},
+            {"type": "formula", "as": "status", "expr": "datum.Status"},
+            {"type": "formula", "as": "progress_pct", "expr": "toNumber(datum.ProgressPct)"},
+            {
+            "type": "formula",
+            "as": "workpackage_planned_start_date",
+            "expr": "datum.PlannedStartDate ? toDate(datum.PlannedStartDate) : null"
+            },
+            {
+            "type": "formula",
+            "as": "workpackage_planned_end_date",
+            "expr": "datum.PlannedEndDate ? toDate(datum.PlannedEndDate) : null"
+            },
+            {
+            "type": "formula",
+            "as": "workpackage_actual_start_date",
+            "expr": "datum.ActualStartDate ? toDate(datum.ActualStartDate) : null"
+            },
+            {
+            "type": "formula",
+            "as": "workpackage_actual_end_date",
+            "expr": "datum.ActualEndDate ? toDate(datum.ActualEndDate) : null"
+            },
+            {
+            "type": "formula",
+            "as": "planned_start_ts_sort",
+            "expr": "datum.PlannedStartDate ? time(toDate(datum.PlannedStartDate)) : 99999999999999"
+            },
+            {
+            "type": "formula",
+            "as": "planned_end_for_domain",
+            "expr": "datum.PlannedEndDate ? toDate(datum.PlannedEndDate) : (datum.PlannedStartDate ? toDate(datum.PlannedStartDate) : null)"
+            },
+            {
+            "type": "formula",
+            "as": "actual_end_for_domain",
+            "expr": "datum.ActualEndDate ? toDate(datum.ActualEndDate) : ( null)"
+            },
+            {"type": "formula", "as": "heading_number", "expr": "toNumber(datum.HeadingNumber)"},
+            {"type": "formula", "as": "milestone_number", "expr": "toNumber(datum.MilestoneNumber)"},
+            {
+            "type": "formula",
+            "as": "heading_min_ts",
+            "expr": "datum.HeadingMinDate ? time(toDate(datum.HeadingMinDate)) : 99999999999999"
+            },
+            {"type": "formula", "as": "is_heading", "expr": "false"},
+            {"type": "formula", "as": "planned_duration_days", "expr": "toNumber(datum.PlannedDuration_days)"},
+            {"type": "formula", "as": "depends_on_milestone_id", "expr": "datum.DependsOnMilestoneID ? datum.DependsOnMilestoneID : ''"},
+            {"type": "formula", "as": "composite_key", "expr": "datum.ProjectID + '|' + datum.MilestoneID"},
+            {"type": "formula", "as": "is_critical", "expr": "isValid(datum.TotalFloat_days) && toNumber(datum.TotalFloat_days) === 0"}
+        ]
+        },
+        {
+        "name": "heading_rows",
+        "source": "data_with_aggregates",
+        "transform": [
+            {
+            "type": "aggregate",
+            "groupby": ["ProjectID", "MilestoneHeading"],
+            "ops": ["min", "min"],
+            "fields": ["heading_number", "heading_min_ts"],
+            "as": ["heading_number", "min_date_ts"]
+            },
+            {
+            "type": "formula",
+            "as": "sort_key",
+            "expr": "datum.ProjectID + '|' + format(datum.min_date_ts, '013d') + '|0|0000000000000~' + datum.heading_number + ' ' + datum.MilestoneHeading"
+            },
+            {"type": "formula", "as": "is_heading", "expr": "true"},
+            {"type": "formula", "as": "label", "expr": "datum.heading_number + ' ' + datum.MilestoneHeading"},
+            {"type": "formula", "as": "workpackage_planned_start_date", "expr": "null"},
+            {"type": "formula", "as": "workpackage_planned_end_date", "expr": "null"},
+            {"type": "formula", "as": "workpackage_actual_start_date", "expr": "null"},
+            {"type": "formula", "as": "workpackage_actual_end_date", "expr": "null"},
+            {"type": "formula", "as": "computed_end_date", "expr": "null"},
+            {"type": "formula", "as": "computed_actual_end_date", "expr": "null"},
+            {"type": "formula", "as": "project_name", "expr": "null"},
+            {"type": "formula", "as": "workpackage_description", "expr": "null"},
+            {"type": "formula", "as": "status", "expr": "null"},
+            {"type": "formula", "as": "progress_pct", "expr": "null"}
+        ]
+        },
+        {
+        "name": "workpackages_with_eff_end",
+        "source": "data_with_aggregates",
+        "transform": [
+            {
+            "type": "formula",
+            "as": "computed_end_date",
+            "expr": "datum.workpackage_planned_end_date || datum.workpackage_planned_start_date"
+            },
+            {
+            "type": "formula",
+            "as": "computed_actual_end_date",
+            "expr": "datum.workpackage_actual_end_date || datum.workpackage_actual_start_date"
+            },
+            {
+            "type": "formula",
+            "as": "effective_end_for_deps",
+            "expr": "(datum.workpackage_actual_start_date && !datum.workpackage_actual_end_date && today > time(datum.computed_end_date)) ? today : datum.computed_end_date"
+            },
+            {
+            "type": "formula",
+            "as": "sort_key",
+            "expr": "datum.ProjectID + '|' + format(datum.heading_min_ts, '013d') + '|1|' + format(datum.planned_start_ts_sort, '013d') + '|' + format(datum.milestone_number, '05d') + '~' + datum.milestone_id + ' ' + datum.MilestoneName"
+            },
+            {
+            "type": "formula",
+            "as": "label",
+            "expr": "datum.milestone_id + ' ' + datum.MilestoneName"
+            }
+        ]
+        },
+        {
+        "name": "workpackages",
+        "source": "workpackages_with_eff_end",
+        "transform": [
+            {
+            "type": "formula",
+            "as": "pred_key",
+            "expr": "datum.depends_on_milestone_id ? datum.ProjectID + '|' + datum.depends_on_milestone_id : ''"
+            },
+            {
+            "type": "lookup",
+            "from": "workpackages_with_eff_end",
+            "key": "composite_key",
+            "fields": ["pred_key"],
+            "as": ["pred_base"]
+            },
+            {
+            "type": "formula",
+            "as": "effective_planned_start",
+            "expr": "(datum.depends_on_milestone_id && datum.pred_base && time(datum.pred_base.effective_end_for_deps) > time(datum.workpackage_planned_start_date)) ? datum.pred_base.effective_end_for_deps : datum.workpackage_planned_start_date"
+            },
+            {
+            "type": "formula",
+            "as": "effective_planned_end",
+            "expr": "(datum.depends_on_milestone_id && datum.pred_base && time(datum.pred_base.effective_end_for_deps) > time(datum.workpackage_planned_start_date)) ? (time(datum.pred_base.effective_end_for_deps) + datum.planned_duration_days * 86400000) : datum.computed_end_date"
+            }
+        ]
+        },
+        {
+        "name": "all_rows_merged",
+        "source": ["workpackages", "heading_rows"],
+        "transform": []
+        },
+        {
+        "name": "tasks",
+        "source": ["all_rows_merged"],
+        "transform": [
+            {"type": "collect", "sort": {"field": "sort_key", "order": "ascending"}}
+        ]
+        },
+        {
+        "name": "dep_links",
+        "source": "workpackages",
+        "transform": [
+            {"type": "filter", "expr": "datum.depends_on_milestone_id !== ''"},
+            {"type": "formula", "as": "pred_composite_key", "expr": "datum.ProjectID + '|' + datum.depends_on_milestone_id"},
+            {
+            "type": "lookup",
+            "from": "workpackages",
+            "key": "composite_key",
+            "fields": ["pred_composite_key"],
+            "as": ["pred"]
+            },
+            {"type": "filter", "expr": "datum.pred !== null"}
+        ]
+        }
+    ],
+    "scales": [
+        {
+        "name": "yscale",
+        "type": "band",
+        "domain": {"data": "tasks", "field": "sort_key", "sort": true},
+        "range": [0, {"signal": "taskAreaHeight"}],
+        "paddingInner": 0,
+        "paddingOuter": 0
+        },
+        {
+        "name": "xscale",
+        "type": "time",
+        "domain": {
+            "data": "data_with_aggregates",
+            "fields": [
+            "workpackage_planned_start_date",
+            "planned_end_for_domain",
+            "workpackage_actual_start_date",
+            "actual_end_for_domain"
+            ]
+        },
+        "range": "width",
+        "nice": "year"
+        }
+    ],
+    "axes": [
+        {
+        "orient": "left",
+        "scale": "yscale",
+        "tickSize": 0,
+        "tickBand": "extent",
+        "labelLimit": 400,
+        "labelFontSize": 11,
+        "domain": false,
+        "grid": true,
+        "gridColor": "#e0e0e0",
+        "encode": {
+            "labels": {
+            "update": {
+                "text": {"signal": "split(datum.value, '~')[1]"},
+                "x": {"value": -400},
+                "dx": {"signal": "split(datum.value, '|')[2] === '0' ? 0 : 14"},
+                "limit": {"signal": "split(datum.value, '|')[2] === '0' ? 260 : 246"},
+                "align": {"value": "left"},
+                "baseline": {"value": "middle"},
+                "fontWeight": {"signal": "split(datum.value, '|')[2] === '0' ? 'bold' : 'normal'"},
+                "fontSize": {"signal": "split(datum.value, '|')[2] === '0' ? 13 : 11"}
+            }
+            }
+        }
+        },
+        {
+        "orient": "top",
+        "scale": "xscale",
+        "grid": true,
+        "gridColor": "#e0e0e0",
+        "format": "%Y",
+        "tickCount": {"interval": "year"}
+        }
+    ],
+    "marks": [
+        {
+        "type": "rule",
+        "encode": {
+            "update": {
+            "x": {"value": -140},
+            "x2": {"value": -140},
+            "y": {"value": -24},
+            "y2": {"signal": "taskAreaHeight"},
+            "stroke": {"value": "#d0d0d0"},
+            "strokeWidth": {"value": 1}
+            }
+        }
+        },
+        {
+        "type": "rule",
+        "encode": {
+            "update": {
+            "x": {"value": -70},
+            "x2": {"value": -70},
+            "y": {"value": -24},
+            "y2": {"signal": "taskAreaHeight"},
+            "stroke": {"value": "#d0d0d0"},
+            "strokeWidth": {"value": 1}
+            }
+        }
+        },
+        {
+        "type": "rule",
+        "encode": {
+            "update": {
+            "x": {"value": -140},
+            "x2": {"value": 0},
+            "y": {"value": -2},
+            "stroke": {"value": "#d0d0d0"},
+            "strokeWidth": {"value": 1}
+            }
+        }
+        },
+        {
+        "type": "text",
+        "encode": {
+            "update": {
+            "x": {"value": -105},
+            "y": {"value": -12},
+            "text": {"value": "Dur."},
+            "fontSize": {"value": 10},
+            "fontWeight": {"value": "bold"},
+            "fill": {"value": "#555"},
+            "align": {"value": "center"},
+            "baseline": {"value": "middle"}
+            }
+        }
+        },
+        {
+        "type": "text",
+        "encode": {
+            "update": {
+            "x": {"value": -35},
+            "y": {"value": -12},
+            "text": {"value": "Dep."},
+            "fontSize": {"value": 10},
+            "fontWeight": {"value": "bold"},
+            "fill": {"value": "#555"},
+            "align": {"value": "center"},
+            "baseline": {"value": "middle"}
+            }
+        }
+        },
+        {
+        "type": "text",
+        "from": {"data": "all_rows_merged"},
+        "encode": {
+            "update": {
+            "x": {"value": -105},
+            "y": {"signal": "scale('yscale', datum.sort_key) + rowHeight / 2"},
+            "text": {"signal": "datum.is_heading ? '' : (datum.planned_duration_days ? datum.planned_duration_days + 'd' : '')"},
+            "fontSize": {"value": 10},
+            "fill": {"value": "#444"},
+            "align": {"value": "center"},
+            "baseline": {"value": "middle"}
+            }
+        }
+        },
+        {
+        "type": "text",
+        "from": {"data": "all_rows_merged"},
+        "encode": {
+            "update": {
+            "x": {"value": -35},
+            "y": {"signal": "scale('yscale', datum.sort_key) + rowHeight / 2"},
+            "text": {"signal": "datum.is_heading ? '' : (datum.depends_on_milestone_id ? datum.depends_on_milestone_id : '-')"},
+            "fontSize": {"value": 10},
+            "fill": {"value": "#444"},
+            "align": {"value": "center"},
+            "baseline": {"value": "middle"}
+            }
+        }
+        },
+        {
+        "type": "path",
+        "name": "dep_arrows",
+        "from": {"data": "dep_links"},
+        "encode": {
+            "update": {
+            "path": {
+                "signal": "'M' + scale('xscale', datum.pred.effective_end_for_deps) + ',' + (scale('yscale', datum.pred.sort_key) + rowHeight / 2) + ' L' + (scale('xscale', datum.workpackage_actual_start_date || datum.effective_planned_start || datum.workpackage_planned_start_date) + 5) + ',' + (scale('yscale', datum.pred.sort_key) + rowHeight / 2) + ' L' + (scale('xscale', datum.workpackage_actual_start_date || datum.effective_planned_start || datum.workpackage_planned_start_date) + 5) + ',' + (scale('yscale', datum.sort_key) + (rowHeight * (1 - plannedBarRatio)) / 2)"
+            },
+            "stroke": {"signal": "datum.is_critical ? '#c0392b' : '#00619D'"},
+            "strokeWidth": {"value": 1.2},
+            "fill": {"value": "transparent"},
+            "opacity": {"value": 1.0}
+            }
+        }
+        },
+        {
+        "type": "symbol",
+        "name": "dep_arrowheads",
+        "from": {"data": "dep_links"},
+        "encode": {
+            "update": {
+            "x": {"signal": "scale('xscale', datum.workpackage_actual_start_date || datum.effective_planned_start || datum.workpackage_planned_start_date) + 5"},
+            "y": {"signal": "scale('yscale', datum.sort_key) + (rowHeight * (1 - plannedBarRatio)) / 2"},
+            "shape": {"value": "triangle-down"},
+            "size": {"value": 70},
+            "fill": {"signal": "datum.is_critical ? '#c0392b' : '#00619D'"},
+            "stroke": {"value": "transparent"},
+            "opacity": {"value": 1.0}
+            }
+        }
+        },
+        {
+        "type": "rect",
+        "name": "background_bars",
+        "from": {"data": "all_rows_merged"},
+        "encode": {
+            "update": {
+            "y": {"signal": "scale('yscale', datum.sort_key) + (rowHeight * (1 - plannedBarRatio)) / 2"},
+            "height": {"signal": "rowHeight * plannedBarRatio"},
+            "x": {"signal": "scale('xscale', datum.effective_planned_start || datum.workpackage_planned_start_date)"},
+            "x2": {
+                "signal": "time(datum.effective_planned_start || datum.workpackage_planned_start_date) === time(datum.effective_planned_end || datum.computed_end_date) ? scale('xscale', datetime(year(datum.effective_planned_start || datum.workpackage_planned_start_date), month(datum.effective_planned_start || datum.workpackage_planned_start_date) + 1, date(datum.effective_planned_start || datum.workpackage_planned_start_date))) : scale('xscale', datum.effective_planned_end || datum.computed_end_date)"
+            },
+            "fill": {"signal": "datum.is_critical ? '#f4a9a8' : '#9ac7e8'"},
+            "cornerRadius": {"value": 3},
+            "stroke": {"value": "transparent"},
+            "strokeWidth": {"value": 0},
+            "opacity": {"signal": "datum.is_heading ? 0 : 1"},
+            "tooltip": {
+                "signal": "{title: datum.label, 'Project': datum.project_name, 'Heading': split(datum.workpackage_description, ' > ')[0], 'Planned Start': datum.workpackage_planned_start_date ? timeFormat(datum.workpackage_planned_start_date, '%b %d, %Y') : 'Not specified', 'Planned End': datum.workpackage_planned_end_date ? timeFormat(datum.workpackage_planned_end_date, '%b %d, %Y') : 'Not specified', 'Actual Start': datum.workpackage_actual_start_date ? timeFormat(datum.workpackage_actual_start_date, '%b %d, %Y') : 'Not started', 'Actual End': datum.workpackage_actual_end_date ? timeFormat(datum.workpackage_actual_end_date, '%b %d, %Y') : 'In progress', 'Progress %': datum.progress_pct, 'Status': datum.status}"
+            }
+            },
+            "hover": {"fill": {"signal": "datum.is_critical ? '#e57373' : '#b8d9f7'"}}
+        }
+        },
+        {
+        "type": "rect",
+        "name": "actual_bars",
+        "from": {"data": "all_rows_merged"},
+        "encode": {
+            "update": {
+            "y": {"signal": "scale('yscale', datum.sort_key) + (rowHeight * (1 - actualBarRatio)) / 2"},
+            "height": {"signal": "rowHeight * actualBarRatio"},
+            "x": {"scale": "xscale", "field": "workpackage_actual_start_date"},
+            "x2": {
+                "signal": "datum.workpackage_actual_start_date ? (datum.workpackage_actual_end_date && time(datum.workpackage_actual_start_date) === time(datum.workpackage_actual_end_date) ? scale('xscale', datetime(year(datum.workpackage_actual_start_date), month(datum.workpackage_actual_start_date) + 1, date(datum.workpackage_actual_start_date))) : scale('xscale', datum.workpackage_actual_end_date || today)) : null"
+            },
+            "fill": {"signal": "datum.is_critical ? '#c0392b' : '#00619D'"},
+            "fillOpacity": {"signal": "datum.workpackage_actual_start_date && !datum.workpackage_actual_end_date ? 0.7 : 1"},
+            "stroke": {"signal": "datum.is_critical ? '#c0392b' : '#00619D'"},
+            "strokeWidth": {"signal": "datum.workpackage_actual_start_date && !datum.workpackage_actual_end_date ? 1 : 0"},
+            "strokeDash": {"signal": "datum.workpackage_actual_start_date && !datum.workpackage_actual_end_date ? [4, 4] : []"},
+            "cornerRadius": {"value": 2},
+            "opacity": {"signal": "datum.is_heading ? 0 : (datum.workpackage_actual_start_date ? 1 : 0)"},
+            "tooltip": {
+                "signal": "{title: datum.label, 'Project': datum.project_name, 'Status': datum.status, 'Progress %': datum.progress_pct, 'Actual Start': datum.workpackage_actual_start_date ? timeFormat(datum.workpackage_actual_start_date, '%b %d, %Y') : 'Not started', 'Actual End': datum.workpackage_actual_end_date ? timeFormat(datum.workpackage_actual_end_date, '%b %d, %Y') : 'In progress'}"
+            }
+            },
+            "hover": {"fill": {"signal": "datum.is_critical ? '#96281b' : '#004a7a'"}}
+        }
+        },
+        {
+        "type": "rule",
+        "encode": {
+            "enter": {
+            "x": {"scale": "xscale", "signal": "today"},
+            "y": {"value": 0},
+            "y2": {"signal": "height"},
+            "stroke": {"value": "#ff0000"},
+            "strokeWidth": {"value": 2},
+            "strokeDash": {"value": [5, 5]}
+            }
+        }
+        },
+        {
+        "type": "rect",
+        "encode": {
+            "update": {
+            "x": {"signal": "width - 165"},
+            "y": {"value": 8},
+            "width": {"value": 158},
+            "height": {"value": 94},
+            "fill": {"value": "white"},
+            "stroke": {"value": "#ccc"},
+            "strokeWidth": {"value": 1},
+            "cornerRadius": {"value": 4}
+            }
+        }
+        },
+        {
+        "type": "rect",
+        "encode": {
+            "update": {
+            "x": {"signal": "width - 155"},
+            "y": {"value": 22},
+            "width": {"value": 20},
+            "height": {"value": 10},
+            "fill": {"value": "#9ac7e8"},
+            "cornerRadius": {"value": 2}
+            }
+        }
+        },
+        {
+        "type": "rect",
+        "encode": {
+            "update": {
+            "x": {"signal": "width - 155"},
+            "y": {"value": 42},
+            "width": {"value": 20},
+            "height": {"value": 10},
+            "fill": {"value": "#00619D"},
+            "cornerRadius": {"value": 2}
+            }
+        }
+        },
+        {
+        "type": "rule",
+        "encode": {
+            "update": {
+            "x": {"signal": "width - 155"},
+            "x2": {"signal": "width - 135"},
+            "y": {"value": 67},
+            "stroke": {"value": "#ff0000"},
+            "strokeWidth": {"value": 2},
+            "strokeDash": {"value": [5, 5]}
+            }
+        }
+        },
+        {
+        "type": "text",
+        "encode": {
+            "update": {
+            "x": {"signal": "width - 130"},
+            "y": {"value": 27},
+            "text": {"value": "Planned Timeline"},
+            "fontSize": {"value": 11},
+            "fill": {"value": "#333"},
+            "baseline": {"value": "middle"}
+            }
+        }
+        },
+        {
+        "type": "text",
+        "encode": {
+            "update": {
+            "x": {"signal": "width - 130"},
+            "y": {"value": 47},
+            "text": {"value": "Actual Timeline"},
+            "fontSize": {"value": 11},
+            "fill": {"value": "#333"},
+            "baseline": {"value": "middle"}
+            }
+        }
+        },
+        {
+        "type": "text",
+        "encode": {
+            "update": {
+            "x": {"signal": "width - 130"},
+            "y": {"value": 67},
+            "text": {"value": "Today"},
+            "fontSize": {"value": 11},
+            "fill": {"value": "#333"},
+            "baseline": {"value": "middle"}
+            }
+        }
+        },
+        {
+        "type": "rect",
+        "encode": {
+            "update": {
+            "x": {"signal": "width - 155"},
+            "y": {"value": 82},
+            "width": {"value": 20},
+            "height": {"value": 10},
+            "fill": {"value": "#f4a9a8"},
+            "stroke": {"value": "transparent"},
+            "strokeWidth": {"value": 0},
+            "cornerRadius": {"value": 2}
+            }
+        }
+        },
+        {
+        "type": "text",
+        "encode": {
+            "update": {
+            "x": {"signal": "width - 130"},
+            "y": {"value": 87},
+            "text": {"value": "Critical Path"},
+            "fontSize": {"value": 11},
+            "fill": {"value": "#333"},
+            "baseline": {"value": "middle"}
+            }
+        }
+        }
+    ]
+    }

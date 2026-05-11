@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multi-Project Gantt Chart | Andreas O'Brien</title>
+  <meta name="description" content="Interactive multi-project Gantt chart with critical path highlighting, dependency arrows, and live progress tracking — built with Vega v5 and Power Query M." />
+  <link rel="stylesheet" href="../assets/css/style.css" />
+  <script>(function(){var t=localStorage.getItem('portfolio-theme');if(t)document.documentElement.dataset.theme=t;})()</script>
+  <style>
+    .vega-section {
+      width: 100%;
+      max-width: 1320px;
+      margin: 0 auto 2rem;
+      padding: 0 1.5rem;
+    }
+    .vega-wrapper {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      padding: 1rem 1rem 0.5rem;
+      box-shadow: var(--shadow-card);
+      overflow-x: auto;
+    }
+    #gantt-chart { width: 100%; }
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 1rem;
+    }
+    .tag {
+      background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+      color: var(--color-accent);
+      border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
+      border-radius: 99px;
+      padding: 0.15rem 0.65rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+    #gantt-status {
+      color: var(--color-text-secondary);
+      font-size: 0.875rem;
+      padding: 0.5rem 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-top">
+      <div>
+        <h1>Andreas O'Brien</h1>
+        <p class="subtitle">Data Science &amp; Visualisation Portfolio</p>
+      </div>
+      <button id="theme-toggle" aria-label="Switch to dark mode">Theme</button>
+    </div>
+    <nav>
+      <a href="../index.html">Home</a>
+      <a href="index.html" aria-current="page">Projects</a>
+      <a href="../cv.html">CV</a>
+    </nav>
+  </header>
+
+  <main>
+    <article class="project">
+      <h2>Multi-Project Gantt Chart with Critical Path</h2>
+      <p class="meta">May 2026 &mdash; Data Visualisation &middot; Power Query M &middot; Vega v5</p>
+
+      <div class="tag-list">
+        <span class="tag">Vega v5</span>
+        <span class="tag">Power Query M</span>
+        <span class="tag">Critical Path Method</span>
+        <span class="tag">Gantt Chart</span>
+        <span class="tag">Power BI</span>
+        <span class="tag">Civil Engineering</span>
+      </div>
+
+      <p>
+        An interactive multi-project Gantt chart visualising six concurrent civil and building engineering
+        programmes. Planned and actual timelines are shown as overlapping pill-style bars per milestone,
+        with progress tracked against a fixed reference date. Dependency arrows connect predecessor milestones
+        to successors, automatically routed in a vertical-drop style behind the bars.
+      </p>
+      <p>
+        The <strong>Critical Path Method (CPM)</strong> is computed using a recursive forward pass and
+        backward pass. The forward pass resolves planned start and end dates from the raw dependency chain;
+        the backward pass computes latest finish times and total float per task. Tasks with zero float
+        are rendered in red; parallel non-critical branches remain in blue, making project bottlenecks
+        immediately visible across all six programmes simultaneously.
+      </p>
+
+      <h3>Key features</h3>
+      <ul>
+        <li>Six concurrent engineering projects rendered in a single chart with section headings</li>
+        <li>Planned bar (light) and actual bar (dark) overlaid per task; in-progress tasks show a dashed trailing edge</li>
+        <li>Dependency arrows routed behind pills, coloured red on the critical path and blue on float paths</li>
+        <li>Fan-out dependency structures: multiple tasks sharing the same predecessor, producing visible parallel branches</li>
+        <li>Today reference line with hover tooltips showing planned/actual dates, progress %, and status</li>
+        <li>Power Query M CPM engine with composite-key safety for projects that restart milestone numbering</li>
+      </ul>
+    </article>
+  </main>
+
+  <section class="vega-section">
+    <div class="vega-wrapper">
+      <p id="gantt-status">Loading chart&hellip;</p>
+      <div id="gantt-chart"></div>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2026 Andreas O'Brien &mdash; <a href="https://www.linkedin.com/in/andreasobrien" rel="noopener noreferrer">LinkedIn</a> &middot; <a href="https://github.com/Andrea564/portfolio" rel="noopener noreferrer">GitHub</a></p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/vega@5/build/vega.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6/build/vega-embed.min.js"></script>
+  <script>
+    // ── Utilities ────────────────────────────────────────────────────────────
+    function parseCSV(text) {
+      const lines = text.trim().split(/\r?\n/);
+      const headers = lines[0].split(',').map(h => h.trim());
+      return lines.slice(1).map(line => {
+        const vals = line.split(',');
+        const obj = {};
+        headers.forEach((h, i) => { obj[h] = (vals[i] || '').trim(); });
+        return obj;
+      });
+    }
+
+    function addDays(date, days) {
+      const d = new Date(date.getTime());
+      d.setDate(d.getDate() + days);
+      return d;
+    }
+
+    function fmtDate(d) {
+      if (!d) return '';
+      return d.toISOString().slice(0, 10);
+    }
+
+    // ── CPM engine ───────────────────────────────────────────────────────────
+    // Replicates the Power Query M forward pass + backward pass.
+    function computeCPM(rows) {
+      const projects = {};
+      rows.forEach(r => {
+        if (!projects[r.ProjectID]) projects[r.ProjectID] = [];
+        projects[r.ProjectID].push(r);
+      });
+
+      const output = [];
+
+      for (const [, prows] of Object.entries(projects)) {
+        const projectStart = new Date(prows[0].ProjectStartDate);
+        const byId = {};
+        prows.forEach(r => { byId[r.MilestoneID] = r; });
+
+        // ── Forward pass (planned) ──────────────────────────────────────────
+        const pStartCache = {};
+        function getPlannedStart(id) {
+          if (id in pStartCache) return pStartCache[id];
+          const row = byId[id];
+          if (!row) return projectStart;
+          const dep = row.DependsOnMilestoneID;
+          let s;
+          if (!dep) {
+            s = projectStart;
+          } else {
+            const depS = getPlannedStart(dep);
+            s = addDays(depS, parseInt(byId[dep].PlannedDuration_days) || 0);
+          }
+          pStartCache[id] = s;
+          return s;
+        }
+
+        // ── Forward pass (actual) ───────────────────────────────────────────
+        const aStartCache = {};
+        function getActualStart(id) {
+          if (id in aStartCache) return aStartCache[id];
+          const row = byId[id];
+          if (!row) { aStartCache[id] = null; return null; }
+          const dep = row.DependsOnMilestoneID;
+          let s;
+          if (!dep) {
+            s = projectStart;
+          } else {
+            const depS = getActualStart(dep);
+            if (!depS) { aStartCache[id] = null; return null; }
+            const depActDur = byId[dep].ActualDuration_days ? parseInt(byId[dep].ActualDuration_days) : null;
+            if (!depActDur) { aStartCache[id] = null; return null; }
+            s = addDays(depS, depActDur);
+          }
+          aStartCache[id] = s;
+          return s;
+        }
+
+        // Compute date fields for each milestone
+        const dated = prows.map(r => {
+          const pStart = getPlannedStart(r.MilestoneID);
+          const pDur   = parseInt(r.PlannedDuration_days) || 0;
+          const pEnd   = addDays(pStart, pDur);
+          const aStart = getActualStart(r.MilestoneID);
+          const aDur   = r.ActualDuration_days ? parseInt(r.ActualDuration_days) : null;
+          const aEnd   = aStart && aDur ? addDays(aStart, aDur) : null;
+          return { ...r, _pStart: pStart, _pEnd: pEnd, _aStart: aStart, _aEnd: aEnd };
+        });
+
+        // ── Backward pass ───────────────────────────────────────────────────
+        const projectEnd = dated.reduce((mx, r) => r._pEnd > mx ? r._pEnd : mx, projectStart);
+
+        const successors = {};
+        dated.forEach(r => { successors[r.MilestoneID] = []; });
+        dated.forEach(r => {
+          if (r.DependsOnMilestoneID && successors[r.DependsOnMilestoneID])
+            successors[r.DependsOnMilestoneID].push(r.MilestoneID);
+        });
+
+        const lfCache = {};
+        const datedById = {};
+        dated.forEach(r => { datedById[r.MilestoneID] = r; });
+
+        function getLatestFinish(id) {
+          if (id in lfCache) return lfCache[id];
+          const succs = successors[id] || [];
+          if (!succs.length) { lfCache[id] = projectEnd; return projectEnd; }
+          let lf = null;
+          for (const sid of succs) {
+            const succLF  = getLatestFinish(sid);
+            const succDur = parseInt(datedById[sid].PlannedDuration_days) || 0;
+            const ls = addDays(succLF, -succDur);
+            if (!lf || ls < lf) lf = ls;
+          }
+          lfCache[id] = lf;
+          return lf;
+        }
+
+        // ── Heading / milestone sequence numbers ────────────────────────────
+        const headingOrder = [];
+        const headingSeen  = {};
+        dated.forEach(r => {
+          if (!headingSeen[r.MilestoneHeading]) {
+            headingSeen[r.MilestoneHeading] = true;
+            headingOrder.push(r.MilestoneHeading);
+          }
+        });
+        const headingNum = {};
+        headingOrder.forEach((h, i) => { headingNum[h] = i + 1; });
+
+        const milestoneSeq = {};
+        dated.forEach(r => {
+          milestoneSeq[r.MilestoneHeading] = (milestoneSeq[r.MilestoneHeading] || 0) + 1;
+          r._milestoneNumber = milestoneSeq[r.MilestoneHeading];
+        });
+
+        const headingMinDate = {};
+        dated.forEach(r => {
+          const h = r.MilestoneHeading;
+          if (!headingMinDate[h] || r._pStart < headingMinDate[h]) headingMinDate[h] = r._pStart;
+        });
+
+        // ── Assemble output rows ────────────────────────────────────────────
+        dated.forEach(r => {
+          const lf        = getLatestFinish(r.MilestoneID);
+          const floatMs   = lf - r._pEnd;
+          const floatDays = Math.round(floatMs / 86400000);
+
+          output.push({
+            ProjectID:            r.ProjectID,
+            ProjectName:          r.ProjectName,
+            MilestoneHeading:     r.MilestoneHeading,
+            MilestoneID:          r.MilestoneID,
+            MilestoneName:        r.MilestoneName,
+            DependsOnMilestoneID: r.DependsOnMilestoneID || '',
+            PlannedDuration_days: r.PlannedDuration_days,
+            ProgressPct:          r.ProgressPct,
+            Status:               r.Status,
+            PlannedStartDate:     fmtDate(r._pStart),
+            PlannedEndDate:       fmtDate(r._pEnd),
+            ActualStartDate:      fmtDate(r._aStart),
+            ActualEndDate:        fmtDate(r._aEnd),
+            HeadingNumber:        headingNum[r.MilestoneHeading],
+            MilestoneNumber:      r._milestoneNumber,
+            HeadingMinDate:       fmtDate(headingMinDate[r.MilestoneHeading]),
+            TotalFloat_days:      String(floatDays)
+          });
+        });
+      }
+
+      return output;
+    }
+
+    // ── Bootstrap ────────────────────────────────────────────────────────────
+    async function init() {
+      const statusEl = document.getElementById('gantt-status');
+      try {
+        const [csvText, spec] = await Promise.all([
+          fetch('pbi/project_timelines.csv').then(r => { if (!r.ok) throw new Error('CSV not found'); return r.text(); }),
+          fetch('project_timelines_vega.json').then(r => { if (!r.ok) throw new Error('Spec not found'); return r.json(); })
+        ]);
+
+        const rows = parseCSV(csvText);
+        const data = computeCPM(rows);
+
+        // Inject computed data into the empty 'dataset' source
+        const ds = spec.data.find(d => d.name === 'dataset');
+        ds.values = data;
+
+        statusEl.remove();
+        await vegaEmbed('#gantt-chart', spec, { actions: false, renderer: 'svg' });
+      } catch (err) {
+        statusEl.textContent = 'Chart could not be loaded: ' + err.message;
+        console.error(err);
+      }
+    }
+
+    init();
+  </script>
+  <script src="../assets/js/theme.js"></script>
+</body>
+</html>
