@@ -1,0 +1,349 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v5.json",
+  "description": "European cross-border electricity flows 2025 \u2014 arc width = annual GWh, colour = exporter renewable share",
+  "width": 900,
+  "height": 560,
+  "padding": {
+    "top": 50,
+    "bottom": 30,
+    "left": 10,
+    "right": 170
+  },
+  "background": "#1a2035",
+  "data": [
+    {
+      "name": "world",
+      "format": {
+        "type": "topojson",
+        "feature": "countries"
+      },
+      "url": "https://raw.githubusercontent.com/Andrea564/portfolio/main/assets/files/countries-50m.json"
+    },
+    {
+      "name": "dataset"
+    },
+    {
+      "name": "flows",
+      "source": "dataset",
+      "transform": [
+        {
+          "type": "geopoint",
+          "projection": "europeProj",
+          "fields": [
+            "FromLon",
+            "FromLat"
+          ],
+          "as": [
+            "from_x",
+            "from_y"
+          ]
+        },
+        {
+          "type": "geopoint",
+          "projection": "europeProj",
+          "fields": [
+            "ToLon",
+            "ToLat"
+          ],
+          "as": [
+            "to_x",
+            "to_y"
+          ]
+        },
+        {
+          "type": "linkpath",
+          "shape": "curve",
+          "sourceX": "from_x",
+          "sourceY": "from_y",
+          "targetX": "to_x",
+          "targetY": "to_y",
+          "as": "path"
+        }
+      ]
+    },
+    {
+      "name": "nodes",
+      "source": "dataset",
+      "transform": [
+        {
+          "type": "aggregate",
+          "groupby": [
+            "FromCountryMapCode",
+            "FromCountryName",
+            "FromLat",
+            "FromLon",
+            "RenewableShare_From",
+            "RenewableCategory_From"
+          ],
+          "fields": [
+            "GWh_Annual"
+          ],
+          "ops": [
+            "sum"
+          ],
+          "as": [
+            "TotalExports_GWh"
+          ]
+        },
+        {
+          "type": "geopoint",
+          "projection": "europeProj",
+          "fields": [
+            "FromLon",
+            "FromLat"
+          ],
+          "as": [
+            "node_x",
+            "node_y"
+          ]
+        }
+      ]
+    }
+  ],
+  "projections": [
+    {
+      "name": "europeProj",
+      "type": "mercator",
+      "scale": 650,
+      "center": [
+        14,
+        52
+      ],
+      "translate": [
+        400,
+        280
+      ]
+    }
+  ],
+  "scales": [
+    {
+      "name": "renewableColor",
+      "type": "linear",
+      "domain": [
+        0,
+        25,
+        50,
+        75,
+        100
+      ],
+      "range": [
+        "#e74c3c",
+        "#e67e22",
+        "#f4d03f",
+        "#58d68d",
+        "#1a9850"
+      ],
+      "clamp": true
+    },
+    {
+      "name": "flowWidth",
+      "type": "linear",
+      "domain": [
+        0,
+        5
+      ],
+      "range": [
+        0.5,
+        8
+      ],
+      "clamp": true
+    },
+    {
+      "name": "nodeSize",
+      "type": "sqrt",
+      "domain": [
+        0,
+        250000
+      ],
+      "range": [
+        30,
+        650
+      ],
+      "clamp": true
+    }
+  ],
+  "marks": [
+    {
+      "description": "World country polygons \u2014 background geography",
+      "type": "shape",
+      "from": {
+        "data": "world"
+      },
+      "transform": [
+        {
+          "type": "geoshape",
+          "projection": "europeProj"
+        }
+      ],
+      "encode": {
+        "enter": {
+          "fill": {
+            "value": "#4a5068"
+          },
+          "stroke": {
+            "value": "#9ca3af"
+          },
+          "strokeWidth": {
+            "value": 0.8
+          }
+        }
+      }
+    },
+    {
+      "description": "Flow arcs between country pairs",
+      "type": "path",
+      "from": {
+        "data": "flows"
+      },
+      "encode": {
+        "enter": {
+          "path": {
+            "field": "path"
+          },
+          "stroke": {
+            "scale": "renewableColor",
+            "field": "RenewableShare_From"
+          },
+          "strokeWidth": {
+            "scale": "flowWidth",
+            "field": "GWh_LogScaled"
+          },
+          "strokeOpacity": {
+            "value": 0.5
+          },
+          "fill": {
+            "value": "transparent"
+          },
+          "tooltip": {
+            "signal": "{'Flow': datum.FromCountryName + ' \u2192 ' + datum.ToCountryName, 'Annual GWh': format(datum.GWh_Annual, ',.0f'), 'Exporter renewable %': datum.RenewableShare_From + '%', 'Category': datum.RenewableCategory_From}"
+          }
+        },
+        "hover": {
+          "strokeOpacity": {
+            "value": 0.95
+          },
+          "cursor": {
+            "value": "pointer"
+          }
+        }
+      }
+    },
+    {
+      "description": "Country node circles \u2014 sized by total exports, coloured by renewable share",
+      "type": "symbol",
+      "from": {
+        "data": "nodes"
+      },
+      "encode": {
+        "enter": {
+          "x": {
+            "field": "node_x"
+          },
+          "y": {
+            "field": "node_y"
+          },
+          "size": {
+            "scale": "nodeSize",
+            "field": "TotalExports_GWh"
+          },
+          "fill": {
+            "scale": "renewableColor",
+            "field": "RenewableShare_From"
+          },
+          "fillOpacity": {
+            "value": 0.9
+          },
+          "stroke": {
+            "value": "#ffffff"
+          },
+          "strokeWidth": {
+            "value": 0.8
+          },
+          "tooltip": {
+            "signal": "{'Country': datum.FromCountryName, 'Renewable share': datum.RenewableShare_From + '%', 'Category': datum.RenewableCategory_From, 'Total exports (GWh)': format(datum.TotalExports_GWh, ',.0f')}"
+          }
+        },
+        "hover": {
+          "fillOpacity": {
+            "value": 1
+          },
+          "strokeWidth": {
+            "value": 2
+          },
+          "cursor": {
+            "value": "pointer"
+          }
+        }
+      }
+    },
+    {
+      "description": "Country code labels on nodes",
+      "type": "text",
+      "from": {
+        "data": "nodes"
+      },
+      "encode": {
+        "enter": {
+          "x": {
+            "field": "node_x"
+          },
+          "y": {
+            "field": "node_y"
+          },
+          "text": {
+            "field": "FromCountryMapCode"
+          },
+          "align": {
+            "value": "center"
+          },
+          "baseline": {
+            "value": "middle"
+          },
+          "fill": {
+            "value": "#ffffff"
+          },
+          "fontSize": {
+            "value": 8
+          },
+          "fontWeight": {
+            "value": "bold"
+          },
+          "opacity": {
+            "value": 0.9
+          }
+        }
+      }
+    }
+  ],
+  "legends": [
+    {
+      "fill": "renewableColor",
+      "title": "Renewable share (%)",
+      "titleColor": "#cccccc",
+      "labelColor": "#aaaaaa",
+      "titleFontSize": 11,
+      "labelFontSize": 10,
+      "orient": "right",
+      "type": "gradient",
+      "gradientLength": 180,
+      "gradientThickness": 14,
+      "values": [
+        0,
+        25,
+        50,
+        75,
+        100
+      ]
+    }
+  ],
+  "title": {
+    "text": "European Cross-Border Electricity Flows \u2014 2025",
+    "subtitle": "Arc width \u221d annual GWh  |  Colour = exporter renewable share",
+    "color": "#e8eaf0",
+    "subtitleColor": "#888888",
+    "fontSize": 14,
+    "subtitleFontSize": 11,
+    "anchor": "start",
+    "offset": 8
+  }
+}
